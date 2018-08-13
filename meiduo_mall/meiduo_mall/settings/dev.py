@@ -43,11 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     "corsheaders",  # 跨域CORS请求
     "rest_framework",
     "users.apps.UsersConfig",
     "verifications.apps.VerificationsConfig",
-
+    "oauth.apps.OauthConfig",
+    "areas.apps.AreasConfig",
 ]
 
 MIDDLEWARE = [
@@ -172,9 +174,11 @@ REST_FRAMEWORK = {
     ),
 }
 
-# Token有效期
 JWT_AUTH = {
+    # Token有效期
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    # 把自定义的JWT处理字段函数添加到配置文件中
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
 }
 
 # 日志配置
@@ -222,6 +226,11 @@ LOGGING = {
 # 告知Django认证系统，使用自定义的模型类
 AUTH_USER_MODEL = "users.User"
 
+# 使用自定义的用户认证类覆盖掉django的默认用户认证
+AUTHENTICATION_BACKENDS = [
+    'users.utils.UsernameMobileAuthBackend',
+]
+
 # CORS跨域请求白名单
 CORS_ORIGIN_WHITELIST = (
     '127.0.0.1:8080',
@@ -230,3 +239,41 @@ CORS_ORIGIN_WHITELIST = (
     'api.meiduo.site:8000'  # 后台页面
 )
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
+# 第三方QQ登录的应用开发信息配置
+QQ_CLIENT_ID = '101474184'
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8080/oauth_callback.html'
+QQ_STATE = '/index.html'
+QQ_CLIENT_SECRET = 'c6ce949e04e12ecc909ae6a8b09b637c'
+
+# 用户个人信息邮箱地址激活认证：QQ邮箱发送邮件，POP3/IMAP配置
+# http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=28&&no=331
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 25
+# 发送邮件的邮箱
+EMAIL_HOST_USER = 'huzing2524@qq.com'
+# 在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = 'bwrgevxvcgfmbcje'
+# EMAIL_USE_TLS = True  # 这里必须是 True，否则发送不成功
+# 收件人看到的发件人
+EMAIL_FROM = '美多商城<huzing2524@qq.com>'
+
+# 163邮箱 用户个人信息邮箱地址激活认证 发送激活邮件配置
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.163.com'
+# EMAIL_PORT = 25
+# # 发送邮件的邮箱
+# EMAIL_HOST_USER = 'huziying2524@163.com'
+# # 在邮箱中设置的客户端授权密码
+# EMAIL_HOST_PASSWORD = 'huzing2524'
+# # 收件人看到的发件人
+# EMAIL_FROM = '美多商城<huziying2524@163.com>'
+
+# DRF扩展配置：mysql数据库查询放入redis缓存
+REST_FRAMEWORK_EXTENSIONS = {
+    # 缓存时间
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 60,
+    # 缓存存储
+    'DEFAULT_USE_CACHE': 'default',
+}

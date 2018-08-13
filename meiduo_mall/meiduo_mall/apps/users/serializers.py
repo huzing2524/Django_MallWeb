@@ -4,6 +4,7 @@ from django_redis import get_redis_connection
 from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
 
+from celery_tasks.email.tasks import send_active_email
 from users.models import User
 
 
@@ -106,3 +107,37 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user.token = token
 
         return user
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """个人中心：用户信息序列化器"""
+
+    class Meta:
+        model = User
+        fields = ("id", "username", "mobile", "email", "email_active")
+
+
+class EmailSerializer(serializers.ModelSerializer):
+    """个人中心：用户邮箱地址序列化器"""
+
+    class Meta:
+        model = User
+        fields = ("id", "email")
+
+    def update(self, instance, validated_data):
+        """
+        更新保存用户的邮箱地址
+        :param instance: 视图执行完返回的user用户模型对象会传递到instance中
+        :param validated_data: 前端传递来，校验完成后的参数
+        :return: 返回用户对象
+        """
+        email = validated_data["email"]
+        instance.email = email
+        instance.save()
+
+        # 生成激活的url链接
+        url = instance.generate_verify_email_url()
+        # 使用celery异步队列发送邮件
+        send_active_email.delay(email, url)
+
+        return instance
