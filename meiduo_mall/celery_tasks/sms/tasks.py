@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-# 开启celery任务，celery是分布式异步/同步任务队列调度框架，任务Task交给消息中间件Broker，然后任务执行单元Worker去Broker中领取任务执行
-# ~/Desktop/Django_MallWeb/meiduo_mall 执行在celery_tasks目录中的main文件
-# celery -A celery_tasks.main worker --loglevel=info
-
 import logging
 from celery_tasks.main import celery_app
 from celery_tasks.sms.utils.yuntongxun.sms import CCP
