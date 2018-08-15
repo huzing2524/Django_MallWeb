@@ -5,7 +5,7 @@ from areas.models import Area
 
 
 class AreaSerializer(serializers.ModelSerializer):
-    """省、直辖市序列化器"""
+    """省、直辖市序列化器，查询集范围已限定"""
 
     class Meta:
         model = Area

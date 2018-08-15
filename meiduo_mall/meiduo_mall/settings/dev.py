@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "verifications.apps.VerificationsConfig",
     "oauth.apps.OauthConfig",
     "areas.apps.AreasConfig",
+    "contents.apps.ContentsConfig",
+    "goods.apps.GoodsConfig",
 ]
 
 MIDDLEWARE = [
@@ -277,3 +279,10 @@ REST_FRAMEWORK_EXTENSIONS = {
     # 缓存存储
     'DEFAULT_USE_CACHE': 'default',
 }
+
+# django文件存储
+DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
+
+# FastDFS
+FDFS_URL = 'http://127.0.0.1:8888/'
+FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
