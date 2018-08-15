@@ -28,10 +28,10 @@ class AreasViewSet(CacheResponseMixin, ReadOnlyModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "list":
-            # /areas/   {'get': 'list'}
+            #  GET /areas/  {'get': 'list'}
             return serializers.AreaSerializer
         else:
             # self.action == "retrieve"
-            # /areas/<pk>  {'get': 'retrieve'}
+            # GET /areas/(?P<pk>\d+)/   {'get': 'retrieve'}
             return serializers.SubAreaSerializer
 

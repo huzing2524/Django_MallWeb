@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import CreateModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, RetrieveAPIView, UpdateAPIView
+from rest_framework.viewsets import GenericViewSet
 
-from users import serializers
+from users import serializers, constants
 from users.models import User
 
 
@@ -90,4 +93,66 @@ class VerifyEmailView(APIView):
 
         return Response({"message": "邮箱验证成功"})
 
+
+class AddressViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
+    """个人中心：用户收货地址新增、删除、修改、查询的视图集"""
+    serializer_class = serializers.UserAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """限定查询集范围
+        在Address类中通过user.addresses查找当前用户所有的收货地址数据"""
+        return self.request.user.addresses.filter(is_deleted=False)  # 未被逻辑删除的地址
+
+    # GET /addresses/   查询--->list
+    def list(self, request, *args, **kwargs):
+        """用户所有收货地址查询"""
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        user = self.request.user
+        # 已指明不要返回user，而是id
+        return Response({
+            "user_id": user.id,
+            "default_address_id": user.default_address_id,
+            "limit": constants.USER_ADDRESS_COUNTS_LIMIT,
+            "addresses": serializer.data
+        })
+
+    # POST /addresses/  新建--->create
+    def create(self, request, *args, **kwargs):
+        """保存用户收货地址，要校验收货地址上限数量，增加判断功能"""
+        if request.user.addresses.filter(is_deleted=False).count() >= constants.USER_ADDRESS_COUNTS_LIMIT:
+            return Response({"message": "保存地址数量已达到上限"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request, *args, **kwargs)
+
+    # DELETE /addresses/<pk>/   删除--->destroy
+    def destory(self, request, *args, **kwargs):
+        """逻辑删除收货地址，DestroyModelMixin的destroy()是物理删除，不满足"""
+        address = self.get_object()
+        address.is_deleted = True  # 逻辑删除
+        address.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # PUT /addresses/<pk>/status/ 设置默认--->status
+    @action(methods=["put"], detail=True)
+    def status(self, request, pk=None):
+        """设置某个收货地址为系统默认收货地址"""
+        address = self.get_object()
+        request.user.default_address = address
+        request.user.save()
+
+        return Response({"message": "设置成功"}, status=status.HTTP_200_OK)
+
+    # PUT /addresses/<pk>/title/    设置标题--->title
+    @action(methods=["put"], detail=True)
+    def title(self, request, pk=None):
+        """修改某个收货地址标签卡的标题"""
+        address = self.get_object()
+        serializer = serializers.AddressTitleSerializer(instance=address, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
