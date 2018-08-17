@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django_redis import get_redis_connection
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, UpdateModelMixin
@@ -8,8 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.viewsets import GenericViewSet
 
+from goods.models import SKU
 from users import serializers, constants
 from users.models import User
+from users.serializers import AddUserBrowsingHistorySerializer
 
 
 # POST /users/
@@ -156,3 +159,23 @@ class AddressViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
 
         return Response(serializer.data)
 
+
+class UserBrowsingHistoryView(CreateAPIView):
+    """用户浏览历史记录"""
+    serializer_class = AddUserBrowsingHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_id = request.user.id
+        # 先从redis中取出商品历史记录的id
+        redis_conn = get_redis_connection("history")
+        sku_id_list = redis_conn.lrange("history_%s" % user_id, 0, constants.USER_BROWSE_HISTORY_MAX_LIMIT)
+
+        skus = []
+        # 使用遍历查询数据库id对应商品在mysql中的详细信息，保持先后顺序
+        for sku_id in sku_id_list:
+            sku = SKU.objects.get(id=sku_id)
+            skus.append(sku)
+
+        serializer = serializers.SKUSerializer(skus, many=True)
+        return Response(serializer.data)

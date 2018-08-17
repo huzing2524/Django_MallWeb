@@ -22,4 +22,5 @@ urlpatterns = [
     url(r"", include("verifications.urls")),
     url(r"^oauth/", include("oauth.urls")),
     url(r"", include("areas.urls")),
+    url(r'^ckeditor/', include('ckeditor_uploader.urls')),  # 富文本编辑器
 ]
