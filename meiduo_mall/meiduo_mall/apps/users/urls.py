@@ -14,6 +14,7 @@ urlpatterns = [
     url(r"^user/$", views.UserDetailView.as_view()),
     url(r"^email/$", views.EmailVIew.as_view()),
     url(r"^emails/verification/$", views.VerifyEmailView.as_view()),
+    url(r"^/browse_histories/$", views.UserBrowsingHistoryView.as_view())
 ]
 
 router = routers.DefaultRouter()

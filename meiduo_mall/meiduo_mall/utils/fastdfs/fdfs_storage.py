@@ -39,7 +39,8 @@ class FastDFSStorage(Storage):
         'Status': 'Upload successed.', 'Local file name': '/Users/delron/Desktop/1.png', 
         'Uploaded size': '151.00KB', 'Storage IP': '10.211.55.5'}
         """
-        ret = client.upload_by_buffer(content.read(), file_ext_name=name.split('.')[-1])  # 传入文件bytes数据，取出文件名后缀png
+        # 传入文件bytes数据，取出文件名后缀png
+        ret = client.upload_by_buffer(content.read(), file_ext_name=name.split('.')[-1])
 
         if ret.get("Status") != "Upload successed.":
             raise Exception("upload file failed")
