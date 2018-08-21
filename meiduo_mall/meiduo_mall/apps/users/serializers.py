@@ -184,7 +184,6 @@ class AddUserBrowsingHistorySerializer(serializers.Serializer):
 
     def validate_sku_id(self, value):
         """校验sku_id是否存在"""
-
         try:
             SKU.objects.get(id=value)
         except SKU.DoesNotExist:
