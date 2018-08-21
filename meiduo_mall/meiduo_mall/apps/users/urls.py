@@ -10,11 +10,11 @@ urlpatterns = [
     url(r"^mobiles/(?P<mobile>1[3-9]\d{9}/count/$)", views.MobileCountView.as_view()),
     url(r"^users/$", views.UserView.as_view()),
     # 提供了登录签发JWT的视图，默认的返回值仅有token，我们还需在返回值中增加username和user_id
-    url(r"^authorizations/$", obtain_jwt_token),
+    url(r"^authorizations/$", views.UserAuthorizeView.as_view()),
     url(r"^user/$", views.UserDetailView.as_view()),
     url(r"^email/$", views.EmailVIew.as_view()),
     url(r"^emails/verification/$", views.VerifyEmailView.as_view()),
-    url(r"^/browse_histories/$", views.UserBrowsingHistoryView.as_view())
+    url(r"^browse_histories/$", views.UserBrowsingHistoryView.as_view())
 ]
 
 router = routers.DefaultRouter()

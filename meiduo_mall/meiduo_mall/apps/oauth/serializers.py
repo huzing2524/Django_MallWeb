@@ -95,8 +95,7 @@ class OAuthQQUserSerializer(serializers.ModelSerializer):
         token = jwt_encode_handler(payload)
 
         user.token = token  # 把token保存到用户模型中
-
-        self.context["view"].user = user
+        self.context["view"].user = user  # 向视图对象中补充user对象属性，以便在视图中使用user
 
         return user
 

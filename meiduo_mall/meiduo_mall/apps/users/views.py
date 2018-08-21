@@ -8,7 +8,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.viewsets import GenericViewSet
+from rest_framework_jwt.views import ObtainJSONWebToken
 
+from carts.utils import merge_cart_cookie_to_redis
 from goods.models import SKU
 from users import serializers, constants
 from users.models import User
@@ -179,3 +181,18 @@ class UserBrowsingHistoryView(CreateAPIView):
 
         serializer = serializers.SKUSerializer(skus, many=True)
         return Response(serializer.data)
+
+
+class UserAuthorizeView(ObtainJSONWebToken):
+    """用户登录认证视图，重写父类JWT Token认证"""
+    def post(self, request, *args, **kwargs):
+        # 调用父类的方法，获取drf jwt扩展默认的认证用户处理结果
+        response = super().post(request, *args, **kwargs)
+
+        # 如果用户登录认证成功，则合并购物车
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data["user"]
+            response = merge_cart_cookie_to_redis(request, user, response)
+
+        return response

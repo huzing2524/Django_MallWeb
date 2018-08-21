@@ -29,7 +29,7 @@ def get_categories():
         })
 
         # 构建当前类别的子类别
-        for cat2 in cat1.goods.goodscategory_set.all():
+        for cat2 in cat1.goodscategory_set.all():
             cat2.sub_cats = []
             for cat3 in cat2.goodscategory_set.all():
                 cat2.sub_cats.append(cat3)
