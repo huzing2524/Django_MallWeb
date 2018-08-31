@@ -5,6 +5,7 @@ from django.db import transaction
 from django.utils import timezone
 from django_redis import get_redis_connection
 from rest_framework import serializers
+from django.db.models import F
 
 from goods.models import SKU
 from orders.models import OrderInfo, OrderGoods
@@ -70,7 +71,7 @@ class SaveOrderSerializer(serializers.ModelSerializer):
                 save_id = transaction.savepoint()
                 # 根据配置信息的时区生成当前时间datetime对象
                 order_id = timezone.now().strftime("%Y%m%d%H%M%S") + "%09d" % user.id
-                # 创建订单记录
+                # 创建订单记录(一个订单包含多条商品购买记录)
                 order = OrderInfo.objects.create(
                     order_id=order_id,
                     user=user,
@@ -83,45 +84,39 @@ class SaveOrderSerializer(serializers.ModelSerializer):
                         "CASH"] else OrderInfo.ORDER_STATUS_ENUM["UNPAID"]
                 )
                 sku_id_list = cart.keys()
+
                 # 遍历需要结算的商品
                 for sku_id in sku_id_list:
-                    while True:
-                        sku = SKU.objects.get(id=sku_id)
-                        sku_count = cart[sku_id]  # 用户需要购买某件商品的数量
-                        origin_stock = sku.stock  # 数据库中商品原始库存
-                        origin_sales = sku.sales  # 数据库中商品原始销量
+                    sku = SKU.objects.get(id=sku_id)
+                    sku_count = cart[sku_id]  # 用户需要购买某件商品的数量
 
-                        if origin_stock < sku_count:
-                            # 商品库存不足，购买失败，回滚事务到保存点
-                            transaction.savepoint_rollback(save_id)
-                            raise serializers.ValidationError("商品%s库存不足" % sku.name)
+                    if sku.stock < sku_count:
+                        # 商品库存不足，购买失败，回滚事务到保存点
+                        transaction.savepoint_rollback(save_id)
+                        raise serializers.ValidationError("商品%s库存不足" % sku.name)
 
-                        import time
-                        time.sleep(5)
+                    # 并发处理，避免出现资源竞争问题，使用"乐观锁"，update返回受影响的行数
+                    # 在更新的时候判断此时的库存是否大于需要购买的数量即可
+                    # F("字段")表示数据库模型类该字段的值，也可以用于两个字段的值比较大小stock__gte=F('sales')
+                    result = SKU.objects.filter(id=sku.id, stock__gte=sku_count).update(stock=F("stock") - sku_count,
+                                                                                        sales=F("sales") + sku_count)
 
-                        new_stock = origin_stock - sku_count
-                        new_sales = origin_sales + sku_count
+                    if result == 0:
+                        # 更新库存失败，出现资源竞争，结束本次循环后续流程，不会创建订单
+                        transaction.savepoint_rollback(save_id)
+                        raise serializers.ValidationError("商品%s库存不足" % sku.name)
 
-                        # 并发处理，避免出现资源竞争问题，使用"乐观锁"，在更新的时候判断此时的库存是否是之前查询出的库存
-                        # update返回受影响的行数
-                        result = SKU.objects.filter(id=sku.id, stock=origin_stock).update(stock=new_stock,
-                                                                                          sales=new_sales)
-                        if result == 0:
-                            # 更新库存失败，出现资源竞争，结束本次循环后续流程，不会创建订单
-                            continue
+                    # 每次循环累加所有商品的价格和数量
+                    order.total_count += sku_count
+                    order.total_amount += sku.price * sku_count
 
-                        order.total_count += sku_count
-                        order.total_amount += sku.price * sku_count
-
-                        # 创建商品订单记录
-                        OrderGoods.objects.create(
-                            order=order,
-                            sku=sku,
-                            count=sku_count,
-                            price=sku.price
-                        )
-                        # 创建订单成功后跳出死循环，继续for循环创建下一件商品的订单记录
-                        break
+                    # 创建商品订单记录
+                    OrderGoods.objects.create(
+                        order=order,
+                        sku=sku,
+                        count=sku_count,
+                        price=sku.price
+                    )
 
                 order.save()
             except serializers.ValidationError:
