@@ -31,8 +31,8 @@ SECRET_KEY = '5&8mijjz+o0z^6r8a53^9wq%tmjco7y7fo$jy)4r02mbhj%dib'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = ["*"]
-ALLOWED_HOSTS = ["api.meiduo.site", "127.0.0.1", "localhost", "www.meiduo.site"]
+ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["api.meiduo.site", "127.0.0.1", "localhost", "www.meiduo.site"]
 
 # Application definition
 
@@ -231,7 +231,7 @@ LOGGING = {
     },
     'handlers': {  # 日志处理方法
         'console': {  # 向终端中输出日志
-            'level': 'ERROR',
+            'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
@@ -249,7 +249,7 @@ LOGGING = {
         'django': {  # 定义了一个名为django的日志器
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
-            'level': 'DEBUG',  # 日志器接收的最低日志级别
+            'level': 'INFO',  # 日志器接收的最低日志级别
         },
     }
 }
