@@ -50,7 +50,7 @@
             DATABASES = {
                 'default': {
                     'ENGINE': 'django.db.backends.mysql',
-                    'HOST': '192.168.31.89',  # 改成宿主机ip地址
+                    'HOST': '192.168.31.89',  # 改成宿主机ip地址或者宿主机docker0地址
                     'PORT': 3306,
                     'USER': 'meiduo',
                     'PASSWORD': 'meiduo',
