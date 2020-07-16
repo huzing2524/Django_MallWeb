@@ -19,6 +19,9 @@
           ```   
     - Django 1.11.11
     - Mysql 5.7.30
+    - Python第三方包, 在/path/Django_MallWeb的项目根目录下:
+        - `pip3 install -r requirements.txt`
+        - Fast DFS文件存储的客户端: `pip3 install meiduo_mall/meiduo_mall/utils/fastdfs/fdfs_client-py-master.zip`
 
 - 数据库:
     - 创建数据库: `create database meiduo_mall default charset=utf8;`
