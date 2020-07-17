@@ -78,7 +78,14 @@
         - 将/var/fdfs/storage中的data目录删除: `sudo rm -rf /var/fdfs/storage/data/`
         - 将data.tar.gz文件拷贝到/var/fdfs/storage中: `sudo cp data.tar.gz /var/fdfs/storage/`
         - 解压缩: `tar -zxvf data.tar.gz`
-    
+
+- xadmin:
+    - Drop-in replacement of Django admin comes with lots of goodies, fully extensible with plugin support, pretty UI based on Twitter Bootstrap.
+    - Django自带的后台管理网站是localhost:port/admin, xadmin是加强版的后台管理站点.
+    - [xadmin](https://pypi.org/project/xadmin/): django >=1.9
+    - [xadmin2](https://pypi.org/project/xadmin2/): django >=2 (Python>=3.7, django高版本使用xadmin会有问题)
+    - 创建超级管理员账号: `python3 meiduo_mall/manage.py createsuperuser`
+
 - Notes:
     - Python解释器版本, Django版本, xadmin版本 有相互对应的关系，选择不合适的版本会报错。
     - xadmin: https://github.com/sshwsfc/xadmin/tarball/master
