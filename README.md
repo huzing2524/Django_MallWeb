@@ -65,6 +65,20 @@
             - 在容器内找到ip地址: `ifconfig` (外部宿主机`ifconfig`列表显示的docker0的ip地址和容器内部ip地址不相同)
             - 在宿主机使用浏览器/postman通过上面的ip address:port访问容器内服务
 
+- FastDFS分布式文件系统:
+    - 拉取镜像: `docker image pull delron/fastdfs`
+    - tracker: 
+        - 负载均衡, 调度
+        - `docker run -dti --network=host --name tracker -v /var/fdfs/tracker:/var/fdfs delron/fastdfs tracker`
+    - storage: 
+        - 文件存储
+        - `docker run -dti --network=host --name storage -e TRACKER_SERVER=本机ip地址(不要使用127.0.0.1):22122 -v /var/fdfs/storage:/var/fdfs delron/fastdfs storage`
+    - 查看所有容器: `sudo docker ps -a` 或者 `sudo docker ps --all`
+    - 添加测试数据到FastDFS文件系统中:
+        - 将/var/fdfs/storage中的data目录删除: `sudo rm -rf /var/fdfs/storage/data/`
+        - 将data.tar.gz文件拷贝到/var/fdfs/storage中: `sudo cp data.tar.gz /var/fdfs/storage/`
+        - 解压缩: `tar -zxvf data.tar.gz`
+    
 - Notes:
     - Python解释器版本, Django版本, xadmin版本 有相互对应的关系，选择不合适的版本会报错。
     - xadmin: https://github.com/sshwsfc/xadmin/tarball/master
