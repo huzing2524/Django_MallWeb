@@ -80,14 +80,12 @@
         - 解压缩: `tar -zxvf data.tar.gz`
 
 - xadmin:
+    - `pip3 install https://github.com/sshwsfc/xadmin/tarball/master`
     - Drop-in replacement of Django admin comes with lots of goodies, fully extensible with plugin support, pretty UI based on Twitter Bootstrap.
     - Django自带的后台管理网站是localhost:port/admin, xadmin是加强版的后台管理站点.
-    - [xadmin](https://pypi.org/project/xadmin/): django >=1.9
-    - [xadmin2](https://pypi.org/project/xadmin2/): django >=2 (Python>=3.7, django高版本使用xadmin会有问题)
+    - PyPI上面的xadmin 0.6.1版本有问题，也不适用Python>=3.7, Django>=2
     - 创建超级管理员账号: `python3 meiduo_mall/manage.py createsuperuser`
 
 - Notes:
     - Python解释器版本, Django版本, xadmin版本 有相互对应的关系，选择不合适的版本会报错。
-    - xadmin: https://github.com/sshwsfc/xadmin/tarball/master
-    - xadmin: 官方版本对Python3的高版本不兼容, xadmin2需要Django2.2以上的版本
     - 最好Docker打包生成一个容器运行, 解决以上问题
