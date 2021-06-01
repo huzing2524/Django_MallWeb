@@ -51,7 +51,7 @@ six==1.11.0
 tablib==0.12.1
 unicodecsv==0.14.1
 uritemplate==3.0.0
-urllib3==1.22
+urllib3==1.26.5
 uWSGI==2.0.17.1
 vine==1.1.4
 xadmin @ https://github.com/sshwsfc/xadmin/tarball/master
